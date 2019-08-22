@@ -1,49 +1,32 @@
 {
-  "name": "@alicloud/mns",
+  "name": "@ruguoapp/mns-node-sdk",
   "version": "1.0.0",
-  "description": "> 该 SDK 并未完全实现所有文档所提及的功能，如果您想使用的功能并未实现，请提[issue](https://github.com/aliyun/aliyun-mns-nodejs-sdk/issues/new)以增加优先级。",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha -t 20000 -R spec test/*.test.js",
-    "lint": "eslint --fix lib index.js test",
-    "build-es5": "babel lib/ -d es5/"
+    "compile": "tsc",
+    "clean": "rm -rf dist",
+    "purge": "rm -rf package-lock.json node_modules && npm run clean",
+    "test": "rm -rf dist && npm run lint && tsc && ava -T 10000 dist/tests",
+    "lint": "tslint --project .",
+    "prettier": "prettier --config .prettierrc --write '{lib,tests,examples}/**/*.ts' index.ts",
+    "prepublishOnly": "npm run compile"
   },
-  "git-pre-hooks": {
-    "pre-release": "npm run build-es5",
-    "post-release": "npm publish --access public"
-  },
-  "author": "Jackson Tian",
-  "license": "MIT",
   "dependencies": {
-    "debug": "^2.6.3",
-    "httpx": "^2.1.1",
-    "kitx": "^1.2.0",
-    "xml2js": "^0.4.17"
+    "debug": "^4.1.1",
+    "lodash": "^4.17.15",
+    "request-promise-native": "^1.0.7",
+    "xml2js": "^0.4.19"
   },
-  "files": [
-    "lib",
-    "es5",
-    "index.js"
-  ],
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.4.0",
-    "babel-register": "^6.24.1",
-    "git-pre-hooks": "^1.2.0",
-    "coveralls": "^3.0.2",
-    "eslint": "^5.8.0",
-    "expect.js": "^0.3.1",
-    "mocha": "^3.3.0",
-    "nyc": "^10.3.2"
+    "@types/debug": "^4.1.5",
+    "@types/lodash": "^4.14.137",
+    "@types/request-promise-native": "^1.0.15",
+    "@types/xml2js": "0.4.4"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aliyun/mns-nodejs-sdk.git"
-  },
+  "author": "",
+  "license": "MIT",
   "keywords": [
     "MNS",
     "Message",
@@ -51,8 +34,7 @@
     "Aliyun",
     "Alicloud"
   ],
-  "bugs": {
-    "url": "https://github.com/aliyun/mns-nodejs-sdk/issues"
-  },
-  "homepage": "https://github.com/aliyun/mns-nodejs-sdk#readme"
+  "publishConfig": {
+    "registry": "http://npmjs.ruguoapp.com"
+  }
 }
