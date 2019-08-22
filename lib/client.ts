@@ -316,7 +316,7 @@ export default class Client {
     params: {
       MessageBody: string
       MessageTag?: string
-      MessageAttributes?: string
+      MessageAttributes?: any
     },
   ): Promise<Response> {
     const url = `/topics/${topicName}/messages`
@@ -348,7 +348,6 @@ export default class Client {
     const code = response.statusCode
     const contentType = response.headers['content-type'] || ''
     const responseBody = response.body
-    console.log(responseBody)
 
     let body
     if (
