@@ -1,5 +1,19 @@
 import * as _ from 'lodash'
 import * as xml2js from 'xml2js'
+import * as requestPromise from 'request-promise-native'
+
+export function requestRetry(
+  uri: string,
+  options: requestPromise.RequestPromiseOptions,
+  retries: number,
+): Promise<any> {
+  return requestPromise(uri, options).catch(err => {
+    if (retries <= 0) {
+      return err.response
+    }
+    return requestRetry(uri, options, retries - 1)
+  })
+}
 
 export function parseXML(input: any): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -40,8 +54,16 @@ export function toXMLBuffer(entityType: string, params: any, subType?: string) {
   return Buffer.from(xml, 'utf8')
 }
 
+export async function getSecurityCredential(
+  ramRole: string,
+): Promise<{ AccessKeyId: string; AccessKeySecret: string }> {
+  return requestPromise(
+    `http://100.100.100.200/latest/meta-data/ram/security-credentials/${ramRole}`,
+  )
+}
+
 export function getEndpoint(
-  accountid: string,
+  accountId: string,
   region: string,
   opts: {
     secure: boolean
@@ -57,8 +79,8 @@ export function getEndpoint(
     region += '-vpc'
   }
   return {
-    endpoint: `${protocol}://${accountid}.mns.${region}.aliyuncs.com`,
-    domain: `${accountid}.mns.${region}.aliyuncs.com`,
+    endpoint: `${protocol}://${accountId}.mns.${region}.aliyuncs.com`,
+    domain: `${accountId}.mns.${region}.aliyuncs.com`,
   }
 }
 
@@ -70,7 +92,7 @@ export function getCanonicalizedMNSHeaders(headers) {
     .join('')
 }
 
-export function getResponseHeaders(headers, attentions) {
+export function getResponseHeaders(headers, attentions): { [header: string]: string } {
   const result = {}
   _.forEach(attentions, key => {
     result[key] = headers[key]
