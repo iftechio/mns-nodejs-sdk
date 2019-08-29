@@ -407,9 +407,9 @@ export default class Client {
         const hostid = extract(e.HostId)
         const err = new Error(
           `${method} ${url} failed with ${code}. ` +
-            `requestid: ${requestid}, hostid: ${hostid}, message: ${message}`,
+          `requestid: ${requestid}, hostid: ${hostid}, message: ${message}`,
         )
-        err.name = `MNS${extract(e.Code)}err.name`
+        err.name = `MNS${extract(e.Code)}Err`
         throw err
       }
 
