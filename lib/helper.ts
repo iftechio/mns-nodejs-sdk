@@ -65,17 +65,15 @@ export async function getSecurityCredential(
 export function getEndpoint(
   accountId: string,
   region: string,
-  opts: {
-    secure: boolean
-    internal: boolean
-    vpc: boolean
-  },
+  secure?: boolean,
+  internal?: boolean,
+  vpc?: boolean,
 ) {
-  const protocol = opts.secure ? 'https' : 'http'
-  if (opts.internal) {
+  const protocol = secure ? 'https' : 'http'
+  if (internal) {
     region += '-internal'
   }
-  if (opts.vpc) {
+  if (vpc) {
     region += '-vpc'
   }
   return {

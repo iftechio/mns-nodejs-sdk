@@ -20,61 +20,51 @@ export default class Client {
   endpointDomain: string
   endpoint: string
 
-  constructor(
-    accountId: string,
-    region: string,
-    accessKeyId: string,
-    accessKeySecret: string,
-    opts = {
-      secure: false,
-      internal: false,
-      vpc: false,
-    },
-  ) {
-    this.accountId = accountId
-    this.accessKeyID = accessKeyId
-    this.accessKeySecret = accessKeySecret
-    const { domain, endpoint } = getEndpoint(accountId, region, opts)
+  constructor(options: {
+    accountId: string
+    region: string
+    accessKeyId: string
+    accessKeySecret: string
+    secure?: boolean
+    internal?: boolean
+    vpc?: boolean
+  }) {
+    this.accountId = options.accountId
+    this.accessKeyID = options.accessKeyId
+    this.accessKeySecret = options.accessKeySecret
+    const { domain, endpoint } = getEndpoint(
+      options.accountId,
+      options.region,
+      options.secure,
+      options.internal,
+      options.vpc,
+    )
     this.endpointDomain = domain
     this.endpoint = endpoint
   }
 
   // Queue
-  async createQueue(
-    queueName: string,
-    params?: {
-      DelaySeconds?: number
-      MaximumMessageSize?: number
-      MessageRetentionPeriod?: number
-      VisibilityTimeout?: number
-      PollingWaitSeconds?: number
-      LoggingEnabled?: boolean
-    },
-  ): Promise<types.CreateQueueResponse> {
-    const body = toXMLBuffer('Queue', params)
-    const url = `/queues/${queueName}`
+  async createQueue(params: types.CreateQueueRequest): Promise<types.CreateQueueResponse> {
+    const body = toXMLBuffer('Queue', params.Attributes)
+    const url = `/queues/${params.QueueName}`
     const response = await this.request('PUT', url, 'Queue', body, { responseHeader: ['location'] })
     return { Location: response.headers.Location }
   }
 
-  async deleteQueue(queueName: string): Promise<void> {
-    await this.request('DELETE', `/queues/${queueName}`, 'Queue', '')
+  async deleteQueue(params: types.DeleteQueueRequest): Promise<void> {
+    await this.request('DELETE', `/queues/${params.QueueName}`, 'Queue', '')
   }
 
-  async listQueue(params?: {
-    start?: string
-    limit?: number
-    prefix?: string
-  }): Promise<types.ListQueueResponse> {
+  async listQueue(params?: types.ListQueueRequest): Promise<types.ListQueueResponse> {
     const customHeaders = {}
-    if (params && params.start) {
-      customHeaders['x-mns-marker'] = params.start
+    if (params && params.Start) {
+      customHeaders['x-mns-marker'] = params.Start
     }
-    if (params && params.limit) {
-      customHeaders['x-mns-ret-number'] = params.limit
+    if (params && params.Limit) {
+      customHeaders['x-mns-ret-number'] = params.Limit
     }
-    if (params && params.prefix) {
-      customHeaders['x-mns-prefix'] = params.prefix
+    if (params && params.Prefix) {
+      customHeaders['x-mns-prefix'] = params.Prefix
     }
     const response = await this.request('GET', '/queues', 'Queues', '', {
       customHeaders,
@@ -82,64 +72,41 @@ export default class Client {
     return response.body
   }
 
-  async getQueueAttributes(queueName: string): Promise<types.GetQueueAttributesResponse> {
-    const response = await this.request('GET', `/queues/${queueName}`, 'Queue', '')
+  async getQueueAttributes(
+    params: types.GetQueueAttributesRequest,
+  ): Promise<types.GetQueueAttributesResponse> {
+    const response = await this.request('GET', `/queues/${params.QueueName}`, 'Queue', '')
     return response.body
   }
 
-  async setQueueAttributes(
-    queueName,
-    params?: {
-      DelaySeconds?: number
-      MaximumMessageSize?: number
-      MessageRetentionPeriod?: number
-      VisibilityTimeout?: number
-      PollingWaitSeconds?: number
-      LoggingEnabled?: boolean
-    },
-  ): Promise<void> {
-    const body = toXMLBuffer('Queue', params)
-    const url = `/queues/${queueName}?metaoverride=true`
+  async setQueueAttributes(params: types.SetQueueAttributesRequest): Promise<void> {
+    const body = toXMLBuffer('Queue', params.Attributes)
+    const url = `/queues/${params.QueueName}?metaoverride=true`
     await this.request('PUT', url, 'Queue', body)
   }
 
   // Message
-  async sendMessage(
-    queueName: string,
-    params: {
-      MessageBody: string
-      DelaySeconds?: number
-      Priority?: number
-    },
-  ): Promise<types.SendMessageResponse> {
-    const url = `/queues/${queueName}/messages`
-    const body = toXMLBuffer('Message', params)
+  async sendMessage(params: types.SendMessageRequest): Promise<types.SendMessageResponse> {
+    const url = `/queues/${params.QueueName}/messages`
+    const body = toXMLBuffer('Message', params.Payloads)
     const response = await this.request('POST', url, 'Message', body)
     return response.body
   }
 
   async batchSendMessage(
-    queueName,
-    params: {
-      MessageBody: string
-      DelaySeconds?: number
-      Priority?: number
-    }[],
+    params: types.BatchSendMessageRequest,
   ): Promise<types.SendMessageResponse[]> {
-    const url = `/queues/${queueName}/messages`
+    const url = `/queues/${params.QueueName}/messages`
     const subType = 'Message'
-    const body = toXMLBuffer('Messages', params, subType)
+    const body = toXMLBuffer('Messages', params.Entries, subType)
     const response = await this.request('POST', url, 'Messages', body)
     return response.body.Message
   }
 
-  async receiveMessage(
-    queueName: string,
-    waitSeconds?: number,
-  ): Promise<types.ReceiveMessageResponse> {
-    let url = `/queues/${queueName}/messages`
-    if (waitSeconds) {
-      url += `?waitseconds=${waitSeconds}`
+  async receiveMessage(params: types.ReceiveMessageRequest): Promise<types.ReceiveMessageResponse> {
+    let url = `/queues/${params.QueueName}/messages`
+    if (params.WaitSeconds) {
+      url += `?waitseconds=${params.WaitSeconds}`
     }
     // 31000 31s +1s max waitSeconds is 30s
     const response = await this.request('GET', url, 'Message', '', { timeout: 31000 })
@@ -147,22 +114,20 @@ export default class Client {
   }
 
   async batchReceiveMessage(
-    queueName: string,
-    numOfMessages: number,
-    waitSeconds?: number,
+    params: types.BatchReceiveMessageRequest,
   ): Promise<types.ReceiveMessageResponse[]> {
-    let url = `/queues/${queueName}/messages?numOfMessages=${numOfMessages}`
-    if (waitSeconds) {
-      url += `&waitseconds=${waitSeconds}`
+    let url = `/queues/${params.QueueName}/messages?numOfMessages=${params.NumOfMessages}`
+    if (params.WaitSeconds) {
+      url += `&waitseconds=${params.WaitSeconds}`
     }
     const response = await this.request('GET', url, 'Messages', '', { timeout: 31000 })
     return response.body.Message
   }
 
-  async peekMessage(queueName: string): Promise<types.PeekMessageResponse> {
+  async peekMessage(params: types.PeekMessageRequest): Promise<types.PeekMessageResponse> {
     const response = await this.request(
       'GET',
-      `/queues/${queueName}/messages?peekonly=true`,
+      `/queues/${params.QueueName}/messages?peekonly=true`,
       'Message',
       '',
     )
@@ -170,25 +135,25 @@ export default class Client {
   }
 
   async batchPeekMessage(
-    queueName: string,
-    numOfMessages: number,
+    params: types.BatchPeekMessageRequest,
   ): Promise<types.PeekMessageResponse[]> {
-    const url = `/queues/${queueName}/messages?` + `peekonly=true&numOfMessages=${numOfMessages}`
+    const url =
+      `/queues/${params.QueueName}/messages?` +
+      `peekonly=true&numOfMessages=${params.NumOfMessages}`
     const response = await this.request('GET', url, 'Messages', '')
     return response.body.Message
   }
 
-  async deleteMessage(queueName: string, receiptHandle: string): Promise<void> {
-    const url = `/queues/${queueName}/messages?ReceiptHandle=${receiptHandle}`
+  async deleteMessage(params: types.DeleteMessageRequest): Promise<void> {
+    const url = `/queues/${params.QueueName}/messages?ReceiptHandle=${params.ReceiptHandle}`
     await this.request('DELETE', url, 'Message', '')
   }
 
   async batchDeleteMessage(
-    queueName: string,
-    receiptHandles: string[],
+    params: types.BatchDeleteMessageRequest,
   ): Promise<types.DeleteMessageResponse[] | void> {
-    const body = toXMLBuffer('ReceiptHandles', receiptHandles, 'ReceiptHandle')
-    const url = `/queues/${queueName}/messages`
+    const body = toXMLBuffer('ReceiptHandles', params.ReceiptHandles, 'ReceiptHandle')
+    const url = `/queues/${params.QueueName}/messages`
     const response = await this.request('DELETE', url, 'Errors', body)
     // 3种情况，普通失败，部分失败，全部成功
     if (response.body) {
@@ -199,50 +164,38 @@ export default class Client {
   }
 
   async changeMessageVisibility(
-    queueName: string,
-    receiptHandle: string,
-    visibilityTimeout: number,
+    params: types.ChangeMessageVisibilityRequest,
   ): Promise<types.ChangeMessageVisibilityResponse> {
     const url =
-      `/queues/${queueName}/messages?` +
-      `receiptHandle=${receiptHandle}&visibilityTimeout=${visibilityTimeout}`
+      `/queues/${params.QueueName}/messages?` +
+      `receiptHandle=${params.ReceiptHandle}&visibilityTimeout=${params.VisibilityTimeout}`
     const response = await this.request('PUT', url, 'ChangeVisibility', '')
     return response.body
   }
 
   // Topic
-  async createTopic(
-    topicName: string,
-    params?: {
-      MaximumMessageSize?: number
-      LoggingEnabled?: boolean
-    },
-  ): Promise<types.CreateTopicResponse> {
-    const body = toXMLBuffer('Topic', params)
-    const response = await this.request('PUT', `/topics/${topicName}`, 'Topic', body, {
+  async createTopic(params: types.CreateTopicRequest): Promise<types.CreateTopicResponse> {
+    const body = toXMLBuffer('Topic', params.Attributes)
+    const response = await this.request('PUT', `/topics/${params.TopicName}`, 'Topic', body, {
       responseHeader: ['location'],
     })
     return { Location: response.headers.location }
   }
 
-  async deleteTopic(topicName: string): Promise<void> {
-    await this.request('DELETE', `/topics/${topicName}`, 'Topic', '')
+  async deleteTopic(params: types.DeleteTopicRequest): Promise<void> {
+    await this.request('DELETE', `/topics/${params.TopicName}`, 'Topic', '')
   }
 
-  async listTopic(params?: {
-    start?: string
-    limit?: number
-    prefix?: string
-  }): Promise<types.ListTopicResponse> {
+  async listTopic(params: types.ListTopicRequest): Promise<types.ListTopicResponse> {
     const customHeaders = {}
-    if (params && params.start) {
-      customHeaders['x-mns-marker'] = params.start
+    if (params && params.Start) {
+      customHeaders['x-mns-marker'] = params.Start
     }
-    if (params && params.limit) {
-      customHeaders['x-mns-ret-number'] = params.limit
+    if (params && params.Limit) {
+      customHeaders['x-mns-ret-number'] = params.Limit
     }
-    if (params && params.prefix) {
-      customHeaders['x-mns-prefix'] = params.prefix
+    if (params && params.Prefix) {
+      customHeaders['x-mns-prefix'] = params.Prefix
     }
     const response = await this.request('GET', '/topics', 'Topics', '', {
       customHeaders,
@@ -250,38 +203,25 @@ export default class Client {
     return response.body
   }
 
-  async getTopicAttributes(topicName: string): Promise<types.GetTopicAttributesResponse> {
-    const response = await this.request('GET', `/topics/${topicName}`, 'Topic', '')
+  async getTopicAttributes(
+    params: types.GetTopicAttributesRequest,
+  ): Promise<types.GetTopicAttributesResponse> {
+    const response = await this.request('GET', `/topics/${params.TopicName}`, 'Topic', '')
     return response.body
   }
 
-  async setTopicAttributes(
-    topicName: string,
-    params?: {
-      MaximumMessageSize?: number
-      LoggingEnabled?: boolean
-    },
-  ): Promise<void> {
-    const body = toXMLBuffer('Topic', params)
-    const url = `/topics/${topicName}?metaoverride=true`
+  async setTopicAttributes(params: types.SetTopicAttributesRequest): Promise<void> {
+    const body = toXMLBuffer('Topic', params.Attributes)
+    const url = `/topics/${params.TopicName}?metaoverride=true`
     await this.request('PUT', url, 'Topic', body)
   }
 
   // Subscription
-  async subscribe(
-    topicName: string,
-    subscriptionName: string,
-    params: {
-      Endpoint: string
-      FilterTag?: string
-      NotifyStrategy?: 'BACKOFF_RETRY' | 'EXPONENTIAL_DECAY_RETRY'
-      NotifyContentFormat?: 'XML' | 'JSON' | 'SIMPLIFIED'
-    },
-  ): Promise<types.SubscribeResponse> {
-    const body = toXMLBuffer('Subscription', params)
+  async subscribe(params: types.SubscribeRequest): Promise<types.SubscribeResponse> {
+    const body = toXMLBuffer('Subscription', params.Attributes)
     const response = await this.request(
       'PUT',
-      `/topics/${topicName}/subscriptions/${subscriptionName}`,
+      `/topics/${params.TopicName}/subscriptions/${params.SubscriptionName}`,
       'Subscription',
       body,
       { responseHeader: ['location'] },
@@ -289,32 +229,31 @@ export default class Client {
     return { Location: response.headers.location }
   }
 
-  async unsubscribe(topicName: string, subscriptionName: string): Promise<void> {
+  async unsubscribe(params: types.UnsubscribeRequest): Promise<void> {
     await this.request(
       'DELETE',
-      `/topics/${topicName}/subscriptions/${subscriptionName}`,
+      `/topics/${params.TopicName}/subscriptions/${params.SubscriptionName}`,
       'Subscription',
       '',
     )
   }
 
   async listSubscriptionByTopic(
-    topicName: string,
-    params?: { start?: string; limit?: number; prefix?: string },
+    params: types.ListSubscriptionByTopicRequest,
   ): Promise<types.ListSubscriptionResponse> {
     const customHeaders = {}
-    if (params && params.start) {
-      customHeaders['x-mns-marker'] = params.start
+    if (params.Start) {
+      customHeaders['x-mns-marker'] = params.Start
     }
-    if (params && params.limit) {
-      customHeaders['x-mns-ret-number'] = params.limit
+    if (params.Limit) {
+      customHeaders['x-mns-ret-number'] = params.Limit
     }
-    if (params && params.prefix) {
-      customHeaders['x-mns-prefix'] = params.prefix
+    if (params.Prefix) {
+      customHeaders['x-mns-prefix'] = params.Prefix
     }
     const response = await this.request(
       'GET',
-      `/topics/${topicName}/subscriptions`,
+      `/topics/${params.TopicName}/subscriptions`,
       'Subscriptions',
       '',
       {
@@ -325,41 +264,27 @@ export default class Client {
   }
 
   async getSubscriptionAttributes(
-    topicName: string,
-    subscriptionName: string,
+    params: types.GetSubscriptionAttributesRequest,
   ): Promise<types.GetSubscriptionAttributesResponse> {
     const response = await this.request(
       'GET',
-      `/topics/${topicName}/subscriptions/${subscriptionName}`,
+      `/topics/${params.TopicName}/subscriptions/${params.SubscriptionName}`,
       'Subscription',
       '',
     )
     return response.body
   }
 
-  async setSubscriptionAttributes(
-    topicName: string,
-    subscriptionName: string,
-    params?: {
-      NotifyStrategy?: 'BACKOFF_RETRY' | 'EXPONENTIAL_DECAY_RETRY'
-    },
-  ): Promise<void> {
-    const body = toXMLBuffer('Subscription', params)
-    const url = `/topics/${topicName}/subscriptions/${subscriptionName}?metaoverride=true`
+  async setSubscriptionAttributes(params: types.SetSubscriptionAttributesRequest): Promise<void> {
+    const body = toXMLBuffer('Subscription', params.Attributes)
+    const url = `/topics/${params.TopicName}/subscriptions/${params.SubscriptionName}?metaoverride=true`
     await this.request('PUT', url, 'Topic', body)
   }
 
   // Message
-  async publishMessage(
-    topicName: string,
-    params: {
-      MessageBody: string
-      MessageTag?: string
-      MessageAttributes?: any
-    },
-  ): Promise<types.PublishMessageResponse> {
-    const url = `/topics/${topicName}/messages`
-    const body = toXMLBuffer('Message', params)
+  async publishMessage(params: types.PublishMessageRequest): Promise<types.PublishMessageResponse> {
+    const url = `/topics/${params.TopicName}/messages`
+    const body = toXMLBuffer('Message', params.Payloads)
     const response = await this.request('POST', url, 'Message', body)
     return response.body
   }
@@ -407,7 +332,7 @@ export default class Client {
         const hostid = extract(e.HostId)
         const err = new Error(
           `${method} ${url} failed with ${code}. ` +
-          `requestid: ${requestid}, hostid: ${hostid}, message: ${message}`,
+            `requestid: ${requestid}, hostid: ${hostid}, message: ${message}`,
         )
         err.name = `MNS${extract(e.Code)}Err`
         throw err
