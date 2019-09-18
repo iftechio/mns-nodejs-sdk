@@ -17,10 +17,13 @@ export default class Client {
   accountId: string
   accessKeyID: string
   accessKeySecret: string
+  region: string
   endpointDomain: string
   endpoint: string
+  keepAlive: boolean
+  retries: number
 
-  constructor(options: {
+  constructor(configs: {
     accountId: string
     region: string
     accessKeyId: string
@@ -28,19 +31,24 @@ export default class Client {
     secure?: boolean
     internal?: boolean
     vpc?: boolean
+    keepAlive?: boolean
+    retries?: number
   }) {
-    this.accountId = options.accountId
-    this.accessKeyID = options.accessKeyId
-    this.accessKeySecret = options.accessKeySecret
+    this.accountId = configs.accountId
+    this.accessKeyID = configs.accessKeyId
+    this.accessKeySecret = configs.accessKeySecret
+    this.region = configs.region
     const { domain, endpoint } = getEndpoint(
-      options.accountId,
-      options.region,
-      options.secure,
-      options.internal,
-      options.vpc,
+      configs.accountId,
+      configs.region,
+      configs.secure,
+      configs.internal,
+      configs.vpc,
     )
     this.endpointDomain = domain
     this.endpoint = endpoint
+    this.keepAlive = !!configs.keepAlive
+    this.retries = configs.retries || 3
   }
 
   // Queue
@@ -48,7 +56,7 @@ export default class Client {
     const body = toXMLBuffer('Queue', params.Attributes)
     const url = `/queues/${params.QueueName}`
     const response = await this.request('PUT', url, 'Queue', body, { responseHeader: ['location'] })
-    return { Location: response.headers.Location }
+    return { Location: response.headers.location }
   }
 
   async deleteQueue(params: types.DeleteQueueRequest): Promise<void> {
@@ -299,7 +307,6 @@ export default class Client {
       responseHeader?: string[]
       timeout?: number
     } = {},
-    retries = 3,
   ) {
     const url = `${this.endpoint}${resource}`
     const headers = this.buildHeaders(method, requestBody, resource, opts.customHeaders)
@@ -311,8 +318,11 @@ export default class Client {
         body: requestBody,
         timeout: opts.timeout,
         resolveWithFullResponse: true,
+        agentOptions: {
+          keepAlive: this.keepAlive
+        }
       },
-      retries,
+      this.retries,
     )
 
     const code = response.statusCode
@@ -332,9 +342,9 @@ export default class Client {
         const hostid = extract(e.HostId)
         const err = new Error(
           `${method} ${url} failed with ${code}. ` +
-            `requestid: ${requestid}, hostid: ${hostid}, message: ${message}`,
+          `requestid: ${requestid}, hostid: ${hostid}, message: ${message}`,
         )
-        err.name = `MNS${extract(e.Code)}Err`
+        err.name = extract(e.Code)
         throw err
       }
 

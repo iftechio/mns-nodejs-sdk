@@ -43,11 +43,17 @@ export type BatchSendMessageRequest = {
   }[]
 }
 
-export type ReceiveMessageRequest = PeekMessageRequest & {
+export type ReceiveMessageRequest = {
+  QueueName: string
   WaitSeconds?: number
 }
 
-export type BatchReceiveMessageRequest = BatchPeekMessageRequest & {
+/**
+ * NumOfMessages means the max number of receiving messages, not exactly the number of receiving messages.
+ */
+export type BatchReceiveMessageRequest = {
+  QueueName: string
+  NumOfMessages: number
   WaitSeconds?: number
 }
 
@@ -55,6 +61,9 @@ export type PeekMessageRequest = {
   QueueName: string
 }
 
+/**
+ * NumOfMessages means the max number of peeking messages, not exactly the number of peeking messages.
+ */
 export type BatchPeekMessageRequest = {
   QueueName: string
   NumOfMessages: number
@@ -70,7 +79,9 @@ export type BatchDeleteMessageRequest = {
   ReceiptHandles: string[]
 }
 
-export type ChangeMessageVisibilityRequest = DeleteMessageRequest & {
+export type ChangeMessageVisibilityRequest = {
+  QueueName: string
+  ReceiptHandle: string
   VisibilityTimeout: number
 }
 
@@ -92,7 +103,9 @@ export type GetTopicAttributesRequest = DeleteTopicRequest
 
 export type SetTopicAttributesRequest = CreateTopicRequest
 
-export type SubscribeRequest = UnsubscribeRequest & {
+export type SubscribeRequest = {
+  TopicName: string
+  SubscriptionName: string
   Attributes: {
     Endpoint: string
     FilterTag?: string
@@ -106,13 +119,18 @@ export type UnsubscribeRequest = {
   SubscriptionName: string
 }
 
-export type ListSubscriptionByTopicRequest = ListQueueRequest & {
+export type ListSubscriptionByTopicRequest = {
   TopicName: string
+  Start?: string
+  Limit?: number
+  Prefix?: string
 }
 
 export type GetSubscriptionAttributesRequest = UnsubscribeRequest
 
-export type SetSubscriptionAttributesRequest = UnsubscribeRequest & {
+export type SetSubscriptionAttributesRequest = {
+  TopicName: string
+  SubscriptionName: string
   Attributes?: {
     NotifyStrategy?: 'BACKOFF_RETRY' | 'EXPONENTIAL_DECAY_RETRY'
   }
@@ -123,7 +141,22 @@ export type PublishMessageRequest = {
   Payloads: {
     MessageBody: string
     MessageTag?: string
-    MessageAttributes?: any
+    MessageAttributes?: {
+      DirectMail?: {
+        AccountName: string
+        Subject: string
+        AddressType: 0 | 1
+        IsHtml: 0 | 1
+        ReplyToAddress: 0 | 1
+      }
+      DirectSMS?: {
+        FreeSignName: string
+        TemplateCode: string
+        Type: 'singleContent' | 'multiContent'
+        Receiver: string
+        SmsParams: string
+      }
+    }
   }
 }
 
@@ -133,10 +166,21 @@ export type CreateQueueResponse = {
 }
 
 export type ListQueueResponse = {
-  Queue: GetQueueAttributesResponse &
-    {
-      QueueURL: string
-    }[]
+  Queue: {
+    QueueName: string
+    CreateTime: string
+    LastModifyTime: string
+    DelaySeconds: string
+    MaximumMessageSize: string
+    MessageRetentionPeriod: string
+    PollingWaitSeconds: string
+    ActiveMessages: string
+    InactiveMessages: string
+    DelayMessages: string
+    LoggingEnabled: string
+    VisibilityTimeout: string
+    QueueURL: string
+  }[]
   NextMarker?: string
 }
 
@@ -161,7 +205,17 @@ export type SendMessageResponse = {
   ReceiptHandle?: string
 }
 
-export type ReceiveMessageResponse = PeekMessageResponse & ChangeMessageVisibilityResponse
+export type ReceiveMessageResponse = {
+  MessageId: string
+  MessageBodyMD5: string
+  MessageBody: string
+  EnqueueTime: string
+  FirstDequeueTime: string
+  DequeueCount: string
+  Priority: string
+  ReceiptHandle: string
+  NextVisibleTime: string
+}
 
 export type PeekMessageResponse = {
   MessageId: string
@@ -189,7 +243,16 @@ export type CreateTopicResponse = {
 }
 
 export type ListTopicResponse = {
-  Topic: GetTopicAttributesResponse & { TopicURL: string }[]
+  Topic: {
+    TopicName: string
+    MessageCount: string
+    MaximumMessageSize: string
+    MessageRetentionPeriod: string
+    CreateTime: string
+    LastModifyTime: string
+    LoggingEnabled: string
+    TopicURL: string
+  }[]
   NextMarker?: string
 }
 
