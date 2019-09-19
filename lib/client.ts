@@ -319,8 +319,8 @@ export default class Client {
         timeout: opts.timeout,
         resolveWithFullResponse: true,
         agentOptions: {
-          keepAlive: this.keepAlive
-        }
+          keepAlive: this.keepAlive,
+        },
       },
       this.retries,
     )
@@ -342,7 +342,7 @@ export default class Client {
         const hostid = extract(e.HostId)
         const err = new Error(
           `${method} ${url} failed with ${code}. ` +
-          `requestid: ${requestid}, hostid: ${hostid}, message: ${message}`,
+            `requestid: ${requestid}, hostid: ${hostid}, message: ${message}`,
         )
         err.name = extract(e.Code)
         throw err

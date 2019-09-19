@@ -6,7 +6,7 @@ const client = new Client({
   region: '',
   accessKeyId: '',
   accessKeySecret: '',
-  keepAlive: true
+  keepAlive: true,
 })
 
 export { client, test }
