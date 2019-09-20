@@ -8,7 +8,7 @@
     "compile": "tsc",
     "clean": "rm -rf dist",
     "purge": "rm -rf package-lock.json node_modules && npm run clean",
-    "test": "rm -rf dist && npm run lint && tsc && ava -T 10000 dist/tests/*.js",
+    "test": "rm -rf dist && npm run lint && tsc && ava -T 10000 dist/tests/*.test.js",
     "lint": "tslint --project .",
     "prettier": "prettier --config .prettierrc --write '{lib,tests,examples}/**/*.ts' index.ts",
     "prepublishOnly": "npm run compile"

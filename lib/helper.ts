@@ -9,7 +9,10 @@ export function requestRetry(
 ): Promise<any> {
   return requestPromise(uri, options).catch(err => {
     if (retries <= 0) {
-      return err.response
+      if (err.response) {
+        return err.response
+      }
+      throw err.error
     }
     return requestRetry(uri, options, retries - 1)
   })
