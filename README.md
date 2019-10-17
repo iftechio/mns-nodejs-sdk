@@ -1,16 +1,5 @@
 # mns-nodejs-sdk
 
-[![NPM version][npm-image]][npm-url]
-[![build status][travis-image]][travis-url]
-[![coverage][cov-image]][cov-url]
-
-[npm-image]: https://img.shields.io/npm/v/@alicloud/mns.svg?style=flat-square
-[npm-url]: https://npmjs.org/package/@alicloud/mns
-[travis-image]: https://img.shields.io/travis/aliyun/mns-nodejs-sdk/master.svg?style=flat-square
-[travis-url]: https://travis-ci.org/aliyun/mns-nodejs-sdk.svg?branch=master
-[cov-image]: https://coveralls.io/repos/aliyun/mns-nodejs-sdk/badge.svg?branch=master&service=github
-[cov-url]: https://coveralls.io/github/aliyun/mns-nodejs-sdk?branch=master
-
 Documents: http://doxmate.cool/aliyun/mns-nodejs-sdk/api.html
 
 
@@ -27,7 +16,7 @@ See: https://help.aliyun.com/document_detail/27475.html
 ## Test
 
 ```sh
-ACCOUNT_ID=<ACCOUNT_ID> ACCESS_KEY_ID=<ACCESS_KEY_ID> ACCESS_KEY_SECRET=<ACCESS_KEY_SECRET> make test
+npm test
 ```
 
 ## Usage
@@ -35,15 +24,17 @@ ACCOUNT_ID=<ACCOUNT_ID> ACCESS_KEY_ID=<ACCESS_KEY_ID> ACCESS_KEY_SECRET=<ACCESS_
 ```ts
 import MNSClient from '@ruguoapp/mns'
 
-const client = new MNSClient('<account id>',
-  '<region>',
-  '<access key id>',
-  '<access key secret>',
-  // optional & default
-  {
+const client = new MNSClient({
+    accountId: '<account id>',
+    region: '<region>',
+    accessKeyId: '<access key id>',
+    accessKeySecret: '<access key secret>',
+    // optional & default
     secure: false, // use https or http
     internal: false, // use internal endpoint
-    vpc: false // use vpc endpoint
+    vpc: false, // use vpc endpoint
+    keepAlive: true,
+    retries: 3,
   }
 );
 

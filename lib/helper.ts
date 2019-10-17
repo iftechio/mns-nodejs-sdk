@@ -108,6 +108,9 @@ function _format(params) {
   let xml = ''
   _.keys(params).forEach(key => {
     const value = params[key]
+    if (_.isEmpty(value)) {
+      return
+    }
     if (typeof value === 'object') {
       xml += `<${key}>${_format(value)}</${key}>`
     } else {
