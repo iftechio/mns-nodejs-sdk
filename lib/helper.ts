@@ -1,4 +1,4 @@
-import * as _ from 'lodash'
+import _ from 'lodash'
 import * as xml2js from 'xml2js'
 import escape from 'xml-escape'
 import requestPromise from 'request-promise-native'
@@ -74,15 +74,9 @@ export function getEndpoint(
   vpc?: boolean,
 ) {
   const protocol = secure ? 'https' : 'http'
-  if (internal) {
-    region += '-internal'
-  }
-  if (vpc) {
-    region += '-vpc'
-  }
   return {
-    endpoint: `${protocol}://${accountId}.mns.${region}.aliyuncs.com`,
-    domain: `${accountId}.mns.${region}.aliyuncs.com`,
+    endpoint: `${protocol}://${accountId}.mns.${region}${internal ? '-internal' : ''}${vpc ? '-vpc' : ''}.aliyuncs.com`,
+    domain: `${accountId}.mns.${region}${internal ? '-internal' : ''}${vpc ? '-vpc' : ''}.aliyuncs.com`,
   }
 }
 
@@ -94,7 +88,10 @@ export function getCanonicalizedMNSHeaders(headers: { [header: string]: string }
     .join('')
 }
 
-export function getResponseHeaders(headers: any, attentions: string[] | undefined): { [header: string]: string } {
+export function getResponseHeaders(
+  headers: any,
+  attentions: string[] | undefined,
+): { [header: string]: string } {
   const result = {}
   _.forEach(attentions, key => {
     result[key] = headers[key]
