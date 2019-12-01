@@ -1,6 +1,6 @@
 {
   "name": "@ruguoapp/mns-node-sdk",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,13 +17,15 @@
     "debug": "^4.1.1",
     "lodash": "^4.17.15",
     "request-promise-native": "^1.0.7",
-    "xml2js": "^0.4.19"
+    "xml2js": "^0.4.19",
+    "xml-escape": "1.1.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.5",
     "@types/lodash": "^4.14.137",
     "@types/request-promise-native": "^1.0.15",
     "@types/xml2js": "0.4.4",
+    "@types/xml-escape": "1.1.0",
     "ava": "2.3.0",
     "prettier": "^1.13.7",
     "pretty-quick": "^1.6.0",

@@ -1,8 +1,9 @@
 import * as _ from 'lodash'
 import * as xml2js from 'xml2js'
-import * as requestPromise from 'request-promise-native'
+import escape from 'xml-escape'
+import requestPromise from 'request-promise-native'
 
-export function requestRetry(
+export async function requestRetry(
   uri: string,
   options: requestPromise.RequestPromiseOptions,
   retries: number,
@@ -18,7 +19,7 @@ export function requestRetry(
   })
 }
 
-export function parseXML(input: any): Promise<any> {
+export async function parseXML(input: any): Promise<any> {
   return new Promise((resolve, reject) => {
     xml2js.parseString(input, (err, obj) => {
       if (err) {
@@ -29,7 +30,7 @@ export function parseXML(input: any): Promise<any> {
   })
 }
 
-export function extract(arr) {
+export function extract(arr: any) {
   if (arr && arr.length === 1 && typeof arr[0] === 'string') {
     return arr[0]
   }
@@ -85,7 +86,7 @@ export function getEndpoint(
   }
 }
 
-export function getCanonicalizedMNSHeaders(headers) {
+export function getCanonicalizedMNSHeaders(headers: { [header: string]: string }): string {
   return _.keys(headers)
     .filter(key => key.startsWith('x-mns-'))
     .sort()
@@ -93,7 +94,7 @@ export function getCanonicalizedMNSHeaders(headers) {
     .join('')
 }
 
-export function getResponseHeaders(headers, attentions): { [header: string]: string } {
+export function getResponseHeaders(headers: any, attentions: string[] | undefined): { [header: string]: string } {
   const result = {}
   _.forEach(attentions, key => {
     result[key] = headers[key]
@@ -101,9 +102,9 @@ export function getResponseHeaders(headers, attentions): { [header: string]: str
   return result
 }
 
-function _format(params) {
+function _format(params: string | object): string {
   if (typeof params === 'string') {
-    return params
+    return escape(params)
   }
   let xml = ''
   _.keys(params).forEach(key => {
@@ -111,11 +112,7 @@ function _format(params) {
     if (_.isEmpty(value)) {
       return
     }
-    if (typeof value === 'object') {
-      xml += `<${key}>${_format(value)}</${key}>`
-    } else {
-      xml += `<${key}>${value}</${key}>`
-    }
+    xml += `<${key}>${_format(value)}</${key}>`
   })
   return xml
 }

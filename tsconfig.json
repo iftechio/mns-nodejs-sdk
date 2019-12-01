@@ -12,10 +12,11 @@
     "typeRoots": [
       "node_modules/@types"
     ],
-    "outDir": "dist"
+    "outDir": "dist",
+    "esModuleInterop": true,
   },
   "exclude": [
     "node_modules",
     "dist"
-  ]
+  ],
 }
