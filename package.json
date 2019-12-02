@@ -25,7 +25,6 @@
     "@types/lodash": "^4.14.137",
     "@types/request-promise-native": "^1.0.15",
     "@types/xml2js": "0.4.4",
-    "@types/xml-escape": "1.1.0",
     "ava": "2.3.0",
     "prettier": "^1.13.7",
     "pretty-quick": "^1.6.0",

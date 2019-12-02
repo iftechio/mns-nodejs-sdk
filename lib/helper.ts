@@ -1,7 +1,7 @@
-import _ from 'lodash'
+import * as _ from 'lodash'
 import * as xml2js from 'xml2js'
-import escape from 'xml-escape'
-import requestPromise from 'request-promise-native'
+import * as escape from 'xml-escape'
+import * as requestPromise from 'request-promise-native'
 
 export async function requestRetry(
   uri: string,
@@ -73,10 +73,13 @@ export function getEndpoint(
   internal?: boolean,
   vpc?: boolean,
 ) {
-  const protocol = secure ? 'https' : 'http'
   return {
-    endpoint: `${protocol}://${accountId}.mns.${region}${internal ? '-internal' : ''}${vpc ? '-vpc' : ''}.aliyuncs.com`,
-    domain: `${accountId}.mns.${region}${internal ? '-internal' : ''}${vpc ? '-vpc' : ''}.aliyuncs.com`,
+    endpoint: `${secure ? 'https' : 'http'}://${accountId}.mns.${region}${
+      internal ? '-internal' : ''
+    }${vpc ? '-vpc' : ''}.aliyuncs.com`,
+    domain: `${accountId}.mns.${region}${internal ? '-internal' : ''}${
+      vpc ? '-vpc' : ''
+    }.aliyuncs.com`,
   }
 }
 
