@@ -103,7 +103,10 @@ export function getResponseHeaders(
 }
 
 function _format(params: string | number | boolean | object): string {
-  if (typeof params !== 'object') {
+  if (typeof params === 'string') {
+    return escape(params)
+  }
+  if (typeof params === 'number' || typeof params === 'boolean') {
     return escape(params.toString())
   }
   let xml = ''
