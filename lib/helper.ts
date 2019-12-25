@@ -102,14 +102,14 @@ export function getResponseHeaders(
   return result
 }
 
-function _format(params: string | object): string {
-  if (typeof params === 'string') {
-    return escape(params)
+function _format(params: string | number | boolean | object): string {
+  if (typeof params !== 'object') {
+    return escape(params.toString())
   }
   let xml = ''
   _.keys(params).forEach(key => {
     const value = params[key]
-    if (_.isEmpty(value)) {
+    if (_.isNil(value)) {
       return
     }
     xml += `<${key}>${_format(value)}</${key}>`
