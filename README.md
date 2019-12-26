@@ -21,9 +21,9 @@ npm test
 ## Usage
 
 ```ts
-import MNSClient from 'mns-node-sdk'
+import { Client } from 'mns-node-sdk'
 
-const client = new MNSClient({
+const client = new Client({
     accountId: '<account id>',
     region: '<region>',
     accessKeyId: '<access key id>',

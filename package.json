@@ -1,7 +1,8 @@
 {
   "name": "mns-node-sdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "unofficial sdk for Aliyun mns",
+  "main": "dist/index.js",
   "scripts": {
     "compile": "tsc",
     "clean": "rm -rf dist",
