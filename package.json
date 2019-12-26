@@ -1,6 +1,6 @@
 {
   "name": "mns-node-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "unofficial sdk for Aliyun mns",
   "scripts": {
     "compile": "tsc",
@@ -40,5 +40,13 @@
     "Service",
     "Aliyun",
     "Alicloud"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iftechio/mns-nodejs-sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/iftechio/mns-nodejs-sdk/issues"
+  },
+  "homepage": "https://github.com/iftechio/mns-nodejs-sdk#readme"
 }
