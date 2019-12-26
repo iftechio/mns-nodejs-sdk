@@ -64,12 +64,12 @@ export default class Client {
   }
 
   async listQueue(params?: types.ListQueueRequest): Promise<types.ListQueueResponse> {
-    const customHeaders = {}
+    const customHeaders: { [header: string]: string } = {}
     if (params && params.Start) {
       customHeaders['x-mns-marker'] = params.Start
     }
     if (params && params.Limit) {
-      customHeaders['x-mns-ret-number'] = params.Limit
+      customHeaders['x-mns-ret-number'] = params.Limit.toString()
     }
     if (params && params.Prefix) {
       customHeaders['x-mns-prefix'] = params.Prefix
@@ -195,12 +195,12 @@ export default class Client {
   }
 
   async listTopic(params: types.ListTopicRequest): Promise<types.ListTopicResponse> {
-    const customHeaders = {}
+    const customHeaders: { [header: string]: string } = {}
     if (params && params.Start) {
       customHeaders['x-mns-marker'] = params.Start
     }
     if (params && params.Limit) {
-      customHeaders['x-mns-ret-number'] = params.Limit
+      customHeaders['x-mns-ret-number'] = params.Limit.toString()
     }
     if (params && params.Prefix) {
       customHeaders['x-mns-prefix'] = params.Prefix
@@ -249,12 +249,12 @@ export default class Client {
   async listSubscriptionByTopic(
     params: types.ListSubscriptionByTopicRequest,
   ): Promise<types.ListSubscriptionResponse> {
-    const customHeaders = {}
+    const customHeaders: { [header: string]: string } = {}
     if (params.Start) {
       customHeaders['x-mns-marker'] = params.Start
     }
     if (params.Limit) {
-      customHeaders['x-mns-ret-number'] = params.Limit
+      customHeaders['x-mns-ret-number'] = params.Limit.toString()
     }
     if (params.Prefix) {
       customHeaders['x-mns-prefix'] = params.Prefix
@@ -329,7 +329,7 @@ export default class Client {
     const contentType = response.headers['content-type'] || ''
     const responseBody = response.body
 
-    let body
+    const body: any = {}
     if (
       responseBody &&
       (contentType.startsWith('text/xml') || contentType.startsWith('application/xml'))
@@ -348,7 +348,6 @@ export default class Client {
         throw err
       }
 
-      body = {}
       _.keys(responseData[type]).forEach(key => {
         if (key !== '$') {
           body[key] = extract(responseData[type][key])

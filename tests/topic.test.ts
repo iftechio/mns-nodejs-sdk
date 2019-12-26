@@ -88,7 +88,7 @@ test.serial('test publish', async t => {
     Payloads: { MessageBody: TEST_MESSAGE_BODY },
   })
 
-  const message = await client.receiveMessage({ QueueName: TEST_QUEUE_NAME })
+  const message = await client.receiveMessage({ QueueName: TEST_QUEUE_NAME, WaitSeconds: 30 })
   t.is(message.MessageBody, TEST_MESSAGE_BODY)
 
   await client.unsubscribe({ TopicName: TEST_TOPIC_NAME, SubscriptionName: TEST_SUBSCRIBE_NAME })

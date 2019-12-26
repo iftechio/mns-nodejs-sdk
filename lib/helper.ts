@@ -1,13 +1,18 @@
 import * as _ from 'lodash'
 import * as xml2js from 'xml2js'
-import * as escape from 'xml-escape'
 import * as requestPromise from 'request-promise-native'
+// tslint:disable-next-line: no-require-imports
+import escape = require('xml-escape')
 
 export async function requestRetry(
   uri: string,
   options: requestPromise.RequestPromiseOptions,
   retries: number,
-): Promise<any> {
+): Promise<{
+  statusCode: string
+  headers: { [header: string]: string }
+  body: string
+}> {
   return requestPromise(uri, options).catch(err => {
     if (retries <= 0) {
       if (err.response) {
@@ -19,7 +24,7 @@ export async function requestRetry(
   })
 }
 
-export async function parseXML(input: any): Promise<any> {
+export async function parseXML(input: string): Promise<any> {
   return new Promise((resolve, reject) => {
     xml2js.parseString(input, (err, obj) => {
       if (err) {
@@ -34,7 +39,7 @@ export function extract(arr: any) {
   if (arr && arr.length === 1 && typeof arr[0] === 'string') {
     return arr[0]
   }
-  arr.forEach(item => {
+  arr.forEach((item: any) => {
     _.keys(item).forEach(key => {
       item[key] = extract(item[key])
     })
@@ -58,12 +63,33 @@ export function toXMLBuffer(entityType: string, params: any, subType?: string) {
   return Buffer.from(xml, 'utf8')
 }
 
-export async function getSecurityCredential(
-  ramRole: string,
-): Promise<{ AccessKeyId: string; AccessKeySecret: string }> {
-  return requestPromise(
-    `http://100.100.100.200/latest/meta-data/ram/security-credentials/${ramRole}`,
-  )
+function _format(params: any): string {
+  if (typeof params === 'string') {
+    return escape(params)
+  }
+  if (typeof params === 'number' || typeof params === 'boolean') {
+    return escape(params.toString())
+  }
+  let xml = ''
+  _.keys(params).forEach(key => {
+    const value = params[key]
+    if (_.isNil(value)) {
+      return
+    }
+    xml += `<${key}>${_format(value)}</${key}>`
+  })
+  return xml
+}
+
+export function getResponseHeaders(
+  headers: { [header: string]: string },
+  attentions: string[] | undefined,
+): { [header: string]: string } {
+  const result: { [header: string]: string } = {}
+  _.forEach(attentions, key => {
+    result[key] = headers[key]
+  })
+  return result
 }
 
 export function getEndpoint(
@@ -89,33 +115,4 @@ export function getCanonicalizedMNSHeaders(headers: { [header: string]: string }
     .sort()
     .map(key => `${key}:${headers[key]}\n`)
     .join('')
-}
-
-export function getResponseHeaders(
-  headers: any,
-  attentions: string[] | undefined,
-): { [header: string]: string } {
-  const result = {}
-  _.forEach(attentions, key => {
-    result[key] = headers[key]
-  })
-  return result
-}
-
-function _format(params: string | number | boolean | object): string {
-  if (typeof params === 'string') {
-    return escape(params)
-  }
-  if (typeof params === 'number' || typeof params === 'boolean') {
-    return escape(params.toString())
-  }
-  let xml = ''
-  _.keys(params).forEach(key => {
-    const value = params[key]
-    if (_.isNil(value)) {
-      return
-    }
-    xml += `<${key}>${_format(value)}</${key}>`
-  })
-  return xml
 }

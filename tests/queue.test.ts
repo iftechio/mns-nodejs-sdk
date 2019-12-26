@@ -45,7 +45,10 @@ test.serial('test message', async t => {
   const peekMessage = await client.peekMessage({ QueueName: TEST_QUEUE_NAME })
   t.is(peekMessage.MessageBody, TEST_MESSAGE_BODY)
 
-  const receiveMessage = await client.receiveMessage({ QueueName: TEST_QUEUE_NAME })
+  const receiveMessage = await client.receiveMessage({
+    QueueName: TEST_QUEUE_NAME,
+    WaitSeconds: 30,
+  })
   t.is(receiveMessage.MessageBody, TEST_MESSAGE_BODY)
 
   await client.changeMessageVisibility({
@@ -84,6 +87,7 @@ test.serial('test batch message', async t => {
   const receiveMessages = await client.batchReceiveMessage({
     QueueName: TEST_QUEUE_NAME,
     NumOfMessages: 3,
+    WaitSeconds: 30,
   })
   t.assert(receiveMessages)
 

@@ -2,11 +2,10 @@
 
 Documents: http://doxmate.cool/aliyun/mns-nodejs-sdk/api.html
 
-
 ## Installation
 
 ```bash
-npm install @ruguoapp/mns --save
+npm install mns-node-sdk
 ```
 
 ## API Spec
@@ -22,7 +21,7 @@ npm test
 ## Usage
 
 ```ts
-import MNSClient from '@ruguoapp/mns'
+import MNSClient from 'mns-node-sdk'
 
 const client = new MNSClient({
     accountId: '<account id>',
@@ -40,32 +39,46 @@ const client = new MNSClient({
 
 (async function () {
   let res;
+
   // create queue
-  res = await client.createQueue('<queue name>');
+  res = await client.createQueue({
+    QueueName: '<queue name>'
+  });
   console.log(res);
+  
   // list queue
   res = await client.listQueue();
   console.log(JSON.stringify(res, null, 2));
+  
   // create topic
-  res = await client.createTopic('<topic name>');
+  res = await client.createTopic({
+    TopicName: '<topic name>'
+  });
   console.log(res);
+  
   // get topic attributes
-  res = await client.getTopicAttributes('<topic name>');
+  res = await client.getTopicAttributes({
+    TopicName: '<topic name>'
+  });
   console.log(res);
+  
   // publish message
-  res = await client.publishMessage('<topic name>', {
-    MessageBody: 'content',
-    MessageAttributes: {
-      DirectSMS: JSON.stringify({
-        FreeSignName: '',
-        TemplateCode: '<template code>',
-        Type: '<type>',
-        Receiver: '<phone number>',
-        SmsParams: JSON.stringify({
-          code: '<code>',
-          product: '<product>'
+  res = await client.publishMessage({
+    TopicName: '<topic name>',
+    Payloads: {
+      MessageBody: 'content',
+      MessageAttributes: {
+        DirectSMS: JSON.stringify({
+          FreeSignName: '',
+          TemplateCode: '<template code>',
+          Type: '<type>',
+          Receiver: '<phone number>',
+          SmsParams: JSON.stringify({
+            code: '<code>',
+            product: '<product>'
+          })
         })
-      })
+      }
     }
   });
   console.log(res);
@@ -78,4 +91,6 @@ const client = new MNSClient({
 
 ## License
 
-The [MIT](LICENSE) License
+The [MIT][1] License
+
+[1]:	LICENSE
