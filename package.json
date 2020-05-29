@@ -1,6 +1,6 @@
 {
   "name": "mns-node-sdk",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "unofficial sdk for Aliyun mns",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,13 +16,15 @@
   "dependencies": {
     "debug": "^4.1.1",
     "lodash": "^4.17.15",
+    "request": "^2.88.2",
     "request-promise-native": "^1.0.7",
-    "xml2js": "^0.4.19",
-    "xml-escape": "1.1.0"
+    "xml-escape": "1.1.0",
+    "xml2js": "^0.4.19"
   },
   "devDependencies": {
     "@types/debug": "^4.1.5",
     "@types/lodash": "^4.14.137",
+    "@types/request": "^2.48.5",
     "@types/request-promise-native": "^1.0.15",
     "@types/xml2js": "0.4.4",
     "@types/xml-escape": "1.1.0",
