@@ -12,12 +12,6 @@ npm install mns-node-sdk
 
 See: https://help.aliyun.com/document_detail/27475.html
 
-## Test
-
-```sh
-npm test
-```
-
 ## Usage
 
 ```ts
